@@ -1,3 +1,12 @@
+@import '~node_modules/modern-normalize/modern-normalize.css';
+body {
+    margin: 0;
+}
+
+.load-more-hide {
+    display: none;
+}
+
 .search-form {
     align-items: center;
     justify-content: center;
@@ -55,8 +64,9 @@
 }
 
 .load-more {
+    display: flex;
     padding: 10px 20px;
-    background-color: #b0adad;
+    background-color: #85a9ed;
     color: #ffffff;
     border-radius: 5px;
     cursor: pointer;

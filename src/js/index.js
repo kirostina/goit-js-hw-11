@@ -1,83 +1,65 @@
-import SimpleLightBox from 'simplelightbox';
-import Notiflix from 'notiflix';
-
-// import { createGalleryMarkup } from './imagesapi';
-
-import axios from 'axios';
-axios.defaults.baseURL = 'https://pixabay.com/api/';
-const API_KEY = '39246673-8495b21e621c9930d57ed1c34';
+import SimpleLightbox from "simplelightbox";
+import Notiflix from "notiflix";
+import 'simplelightbox/dist/simple-lightbox.min.css';
+import { searchImagesFrom } from "./imagesapi";
 
 const searchForm = document.querySelector('.search-form');
+const loadMoreB = document.querySelector('.js-load-more');
 const gallery = document.querySelector('.gallery');
-const loadB = document.querySelector('.load-more');
-const lightBox = new SimpleLightBox('.gallery a')
-
-searchForm.addEventListener('submit', formSubmit);
-loadB.addEventListener('click', loadMore);
 
 let page = 1;
-let searchQuery = '';
-let isLoad = false;
+let query = '';
+let SimpleLightbox;
+searchForm.addEventListener('submit', onSubmit);
+loadMoreB.addEventListener('click', btnLoadMore);
 
-loadB.style.display = 'none';
-
-function formSubmit(event) {
-    event.preventDefault();
-    searchQuery = event.target.elements.searchQuery.value.trim();
-    if (searchQuery === '') {
-        Notiflix.Notify.failure('Please, enter a search query.');
-        return;
-    }
-    clearGallery();
-    page = 1;
-    searchImg();
-};
-
-async function searchImg() {
-    if (isLoad) {
-        return;
-    }
-    isLoad = true;
-    try {
-        const responce = await axios.get('', {
-            params: {
-                key: API_KEY,
-                q: searchQuery,
-                image_type: 'photo',
-                orientation: 'horizontal',
-                safesearch: true,
-                page,
-                per_page: 40,
-            },
-        });
-
-        const images = responce.data.hits;
-        const totalHits = responce.data.totalHits;
-
-        if (images.length === 0) {
-            Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
-        } else {
-            createGalleryMarkup(images);
-            lightBox.refresh();
-            page += 1;
-            Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
-        }
-        hideLoadBInTheEnd(totalHits);
-    }
-    catch (error) {
-        console.error('Error');
-        Notiflix.Notify.failure('Please try again later');
-    }
-    finally {
-        isLoad = false;
-    }
+//нема картинок на запрос
+function catchError(error) {
+    Notiflix.Notify.failure('Sorry, there are no images matching your search query.');
 }
 
-function createGalleryMarkup(images) {
-    const galleryList = images
-        .map(
-            ({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => `
-    <div class="photo-card">
+//пустий запит
+//loadmore
+//нема результатів
+//Hooray!
+async function onSubmit(e) {
+    e.preventDefault();
+    page = 1;
+    query = e.currentTarget.elements.searchQuery.value.trim();
+    gallery.innerHTML = '';
+
+    if (query === '') {
+        Notiflix.Notify.failure('Enter your request!');
+        return;
+    }
+    searchImagesFrom(query, page).then(response => {
+        if (response.hits.length < 40) {
+            loadMoreB.classList.replace('load-more', 'load-more-hide');
+            loadMoreB.disabled = true;
+        } else {
+            loadMoreB.classList.replace('load-more-hide', 'load-more');
+            loadMoreB.disabled = false;
+        }
+        if (response.totalHits === 0) {
+            Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
+        } else {
+            gallery.insertAdjacentHTML('beforeend', createMarkup(response.hits));
+            simpleLightbox = new SimpleLightbox('.gallery a').refresh();
+            Notiflix.Notify.success(`Hooray! We found ${response.totalHits} images.`);
+        }
+    })
+    .catch (catchError)
+    .finally(() => {
+        searchForm.reset();
+    })
+}
+
+//Галерея і картка зображення
+function createMarkup(arr) {
+    return arr.map(({
+        webformatURL, largeImageURL, tags, likes, views, comments, downloads,
+    }) => {
+        return `<div class="photo-card">
   <img src="${webformatURL}" alt="${tags}" loading="lazy" />
   <div class="info">
     <p class="info-item">
@@ -93,42 +75,35 @@ function createGalleryMarkup(images) {
       <b>Downloads:</b> ${downloads}
     </p>
   </div>
-</div>`).join('');
-    gallery.insertAdjacentHTML('beforeend', galleryList);
+</div>`
+    }
+    ).join('');
 }
 
-function clearGallery() {
-    gallery.innerHTML = '';
-};
+//f btnLoadMore
+function btnLoadMore() {
+    page += 1;
+    simpleLightbox.destroy = true;
+    loadMoreB.disabled = true;
 
-function hideLoadBInTheEnd(totalHits) {
-    const totalImg = page * 40;
-    if (totalImg >= totalHits) {
-        loadB.style.display = 'none'
-     if (totalHits === 0) {
-            Notiflix.Notify.info('No pictures')
+    searchImagesFrom(query, page).then(response => {
+        gallery.insertAdjacentHTML('beforeend', createMarkup(response.hits));
+        simpleLightbox = new SimpleLightbox('.gallery a').refresh();
+        const amountOfPages = Math.ceil(response.totalHits / 40);
+        if (page < amountOfPages) {
+            loadMoreB.classList.replace('load-more-hide', 'load-more');
+            loadMoreB.disabled = false;
         } else {
-            Notiflix.Notify.info('We are sorry, but you have reached the end of search results.')
+            Notiflix.Notify.info('We are sorry, but you have reached the end of search results.');
+            loadMoreB.classList.replace('load-more', 'load-more-hidden');
         }
-    }
-    else {
-        loadB.style.display = 'block';
-    }
-};
-function loadMore() {
-    searchImg();
-    scroll();
-};
-
-function scroll() {
-    const { height: cardHeight } = document
-  .querySelector(".gallery")
-  .firstElementChild.getBoundingClientRect();
-
-window.scrollBy({
-  top: cardHeight * 2,
-  behavior: "smooth",
-});
+    })
+        .catch(catchError);
 }
+
+
+
+
+
 
 
