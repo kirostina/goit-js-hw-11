@@ -9,7 +9,6 @@ const gallery = document.querySelector('.gallery');
 
 let page = 1;
 let query = '';
-// let SimpleLightbox = null;
 searchForm.addEventListener('submit', onSubmit);
 loadMoreB.addEventListener('click', btnLoadMore);
 
@@ -44,7 +43,7 @@ async function onSubmit(e) {
             Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
         } else {
             gallery.insertAdjacentHTML('beforeend', createMarkup(response.hits));
-            SimpleLightbox = new SimpleLightbox('.gallery a').refresh();
+            simpleLightbox = new SimpleLightbox('.gallery a').refresh();
             Notiflix.Notify.success(`Hooray! We found ${response.totalHits} images.`);
         }
     })
@@ -83,12 +82,12 @@ function createMarkup(arr) {
 //f btnLoadMore
 function btnLoadMore() {
     page += 1;
-    SimpleLightbox.destroy = true;
+    simpleLightbox.destroy = true;
     loadMoreB.disabled = true;
 
     searchImagesFrom(query, page).then(response => {
         gallery.insertAdjacentHTML('beforeend', createMarkup(response.hits));
-        SimpleLightbox = new SimpleLightbox('.gallery a').refresh();
+        simpleLightbox = new SimpleLightbox('.gallery a').refresh();
         const amountOfPages = Math.ceil(response.totalHits / 40);
         if (page < amountOfPages) {
             loadMoreB.classList.replace('load-more-hide', 'load-more');
