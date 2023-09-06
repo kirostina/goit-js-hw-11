@@ -9,7 +9,7 @@ const gallery = document.querySelector('.gallery');
 
 let page = 1;
 let query = '';
-let SimpleLightbox;
+let SimpleLightbox = null;
 searchForm.addEventListener('submit', onSubmit);
 loadMoreB.addEventListener('click', btnLoadMore);
 
