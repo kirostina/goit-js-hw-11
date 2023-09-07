@@ -82,12 +82,12 @@ function createMarkup(arr) {
 //f btnLoadMore
 function btnLoadMore() {
     page += 1;
-    simpleLightbox.destroy = true;
+    SimpleLightbox.destroy = true;
     loadMoreB.disabled = true;
 
     searchImagesFrom(query, page).then(response => {
         gallery.insertAdjacentHTML('beforeend', createMarkup(response.hits));
-        simpleLightbox = new SimpleLightbox('.gallery a').refresh();
+        SimpleLightbox = new SimpleLightbox('.gallery a').refresh();
         const amountOfPages = Math.ceil(response.totalHits / 40);
         if (page < amountOfPages) {
             loadMoreB.classList.replace('load-more-hide', 'load-more');
