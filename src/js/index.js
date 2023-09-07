@@ -43,7 +43,7 @@ async function onSubmit(e) {
             Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
         } else {
             gallery.insertAdjacentHTML('beforeend', createMarkup(response.hits));
-            simpleLightbox = new SimpleLightbox('.gallery a').refresh();
+            SimpleLightbox = new SimpleLightbox('.gallery a').refresh();
             Notiflix.Notify.success(`Hooray! We found ${response.totalHits} images.`);
         }
     })
