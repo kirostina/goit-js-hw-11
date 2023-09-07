@@ -9,15 +9,15 @@ const gallery = document.querySelector('.gallery');
 
 let page = 1;
 let query = '';
+let responseReceived = false;
 
 searchForm.addEventListener('submit', onSubmit);
 loadMoreB.addEventListener('click', btnLoadMore);
 
-//нема картинок на запрос
+//нема картинок на запит
 function catchError(error) {
     Notiflix.Notify.failure('Sorry, there are no images matching your search query.');
 }
-
 //пустий запит
 //loadmore
 //нема результатів
@@ -27,12 +27,12 @@ async function onSubmit(e) {
     page = 1;
     query = e.currentTarget.elements.searchQuery.value.trim();
     gallery.innerHTML = '';
-
     if (query === '') {
         Notiflix.Notify.failure('Enter your request!');
         return;
     }
     searchImagesFrom(query, page).then(response => {
+        responseReceived = true;
         if (response.hits.length < 40) {
             loadMoreB.classList.replace('load-more', 'load-more-hide');
             loadMoreB.disabled = true;
@@ -45,7 +45,9 @@ async function onSubmit(e) {
         } else {
             gallery.insertAdjacentHTML('beforeend', createMarkup(response.hits));
             simpleLightbox = new SimpleLightbox('.gallery a').refresh();
-            Notiflix.Notify.success(`Hooray! We found ${response.totalHits} images.`);
+            if (responseReceived) {
+                Notiflix.Notify.success(`Hooray! We found ${response.totalHits} images.`);
+            }
         }
     })
     .catch (catchError)
@@ -53,8 +55,6 @@ async function onSubmit(e) {
         searchForm.reset();
     })
 }
-
-//Галерея і картка зображення
 function createMarkup(arr) {
     return arr.map(({
         webformatURL, largeImageURL, tags, likes, views, comments, downloads,
@@ -79,13 +79,11 @@ function createMarkup(arr) {
     }
     ).join('');
 }
-
 //f btnLoadMore
 function btnLoadMore() {
     page += 1;
     simpleLightbox.destroy = true;
     loadMoreB.disabled = true;
-
     searchImagesFrom(query, page).then(response => {
         gallery.insertAdjacentHTML('beforeend', createMarkup(response.hits));
         simpleLightbox = new SimpleLightbox('.gallery a').refresh();
@@ -100,6 +98,14 @@ function btnLoadMore() {
     })
         .catch(catchError);
 }
+
+
+
+
+
+
+
+
 
 
 
