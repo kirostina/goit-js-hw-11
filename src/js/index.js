@@ -1,4 +1,4 @@
-import SimpleLightbox from "simplelightbox";
+// import SimpleLightbox from "simplelightbox";
 import Notiflix from "notiflix";
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import { searchImagesFrom } from "./imagesapi";
